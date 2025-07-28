@@ -17,13 +17,13 @@ Use [`ast-grep`](https://github.com/ast-grep/ast-grep) to search through files.
 **Search for a pattern with a kind**
 
 > [!NOTE]
-> This requires the [ESQuery style
+> This works bets with the [ESQuery style
 > kind](https://ast-grep.github.io/guide/rule-config/atomic-rule.html#esquery-style-kind)
 > syntax added in `ast-grep` 0.39.
 
 
 ```vim
-Sg: $SOME_PATTERN @ some_selector
+:Sg $SOME_PATTERN @ some_selector
 ```
 
 **Going through found items**
