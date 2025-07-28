@@ -20,7 +20,8 @@ Use [`ast-grep`](https://github.com/ast-grep/ast-grep) to search through files.
 > This requires the [ESQuery style
 > kind](https://ast-grep.github.io/guide/rule-config/atomic-rule.html#esquery-style-kind)
 > syntax added in `ast-grep` 0.39.
- 
+
+
 ```vim
 Sg: $SOME_PATTERN @ some_selector
 ```
@@ -41,5 +42,5 @@ escape `\`.
 ## TODO
 
 - [ ] Documentation
-- [ ] Tab completion for kinds use in the selector
+- [ ] Tab completion for kinds used in the selector
 - [ ] Support for more rule functionality (e.g. regex)
