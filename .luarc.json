@@ -1,0 +1,7 @@
+{
+    "workspace.library": [
+        "/usr/share/nvim/runtime/lua",
+        "./lua",
+        "${3rd}/luv/library"
+    ]
+}
