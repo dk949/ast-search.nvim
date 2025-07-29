@@ -2,6 +2,7 @@ local log = require("ast_search.utils.log")
 local command = vim.api.nvim_create_user_command
 local ast_grep = require("ast_search.utils")
 local splitInput = require("ast_search.utils.split_input")
+local cmp = require("ast_search.completion")
 
 local M = {}
 
@@ -26,7 +27,7 @@ function M.createSgCommand()
                 ast_grep.run(pattern, selector, buf, nil, true)
             end
         end,
-        { nargs = '+', bang = true }
+        { nargs = '+', bang = true, complete = cmp.complete }
     )
 end
 
