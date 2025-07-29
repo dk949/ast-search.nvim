@@ -6,6 +6,19 @@ Use [`ast-grep`](https://github.com/ast-grep/ast-grep) to search through files.
 > This is still very much under development. The basic functionality works (see
 > below), but it's still missing a lot of things (like documentation).
 
+## Install
+
+Using Lazy.nvim:
+
+```lua
+{
+    "dk949/ast-search.nvim",
+    -- If true, will automatically prefetch completion data for each new file type
+    opts = { install_fetch_aucmd = nil },
+    cmd = "Sg",
+}
+```
+
 ## Usage
 
 **Search for a simple pattern**
@@ -42,5 +55,5 @@ escape `\`.
 ## TODO
 
 - [ ] Documentation
-- [ ] Tab completion for kinds used in the selector
+- [X] Tab completion for kinds used in the selector
 - [ ] Support for more rule functionality (e.g. regex)
