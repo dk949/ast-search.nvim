@@ -1,5 +1,5 @@
-local BACKSLASH_BACKSLASH = [[&&ast_grep_backslash_backslash&&]]
-local BACKSLASH_AT = [[&&ast_grep_backslash_at&&]]
+local BACKSLASH_BACKSLASH = [[&&ast_search_backslash_backslash&&]]
+local BACKSLASH_AT = [[&&ast_search_backslash_at&&]]
 
 ---comment
 ---@param input string
