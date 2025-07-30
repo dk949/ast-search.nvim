@@ -42,17 +42,17 @@ Related:
   - Ast-grep pattern syntax: https://ast-grep.github.io/guide/pattern-syntax.html
 
 Examples:
-
+>vim
     :Sg $A = $_B
-
+<
 Places all destinations of assignments in the |quickfix| list.
-
+>vim
     :Sg $A @ initializer_list
-
+<
 Matches C++ initializer lists (e.g., `{1, 2, 3}`).
-
+>vim
     :Sg hello @ field_initializer_list identifier
-
+<
 Matches identifiers named `hello` inside any `field_initializer_list`.
 
 NOTE:                                             *ast-search-query* *ast-search-selector* 
@@ -72,7 +72,7 @@ CAUTION: The Lua API is not yet stable and may change. *ast-search-api-unstable*
 
 ast_search.utils.run({pattern}, {selector}, {buf}, {cb}, {go_to_first})
 
-                                                       *ast_search.utils.run()*
+                                                       *ast-search.utils.run()*
 
 Runs `ast-grep run` asynchronously.
 
@@ -94,13 +94,13 @@ asynchronously, returning a `vim.SystemObj` handle to the started process.
 It takes a {pattern} and optionally a {selector} which will be passed as
 `--pattern` and `--selector` arguments to {ast-grep run} respectively.
 
-It takes an optional |ast_search.BufSpec| to determine which buffer to run on.
+It takes an optional |ast-search.BufSpec| to determine which buffer to run on.
 {nil} indicates current buffer.
 
 The {cb} callback (if supplied) will be executed after the command has
 completed, but before the quickfix list is populated. Returning {false} or {nil}
 will result in quickfix list not being populated or opened. The callback takes
-a list of |ast_search.Match|.
+a list of |ast-search.Match|.
 
 If the search succeeds and {cb} returns true (or is `nil`) the function will
 call |:cfirst|. Pass `false` as the last argument to prevent this.
@@ -113,7 +113,7 @@ Raises an error if `ast-grep` exits with a non-zero exit code.
 
 ast_search.utils.scan({rule}, {buf}, {lang}, {cb}, {go_to_first})
 
-                                                       *ast_search.utils.scan()*
+                                                       *ast-search.utils.scan()*
 
 Runs `ast-grep scan` asynchronously.
 
@@ -135,25 +135,25 @@ asynchronously, returning a `vim.SystemObj` handle to the started process.
 The {rule} argument corresponds to the {rule} key in the inline rule (i.e. you
 don't need to specify {id} or language or include the key {rule} itself).
 
-It takes an optional {ast_search.BufSpec} to determine which buffer to run on.
+It takes an optional {ast-search.BufSpec} to determine which buffer to run on.
 {nil} indicates current buffer.
 
 The optional {lang} argument will be passed as the {language} key in the rule.
 If it is omitted, the language of the current buffer is used.
 
-{cb} and {go_to_first} work the same as in |ast_search.utils.run|.
+{cb} and {go_to_first} work the same as in |ast-search.utils.run|.
 
 
 ==============================================================================
 TYPES AND STRUCTURES                                             *ast-search-types*
 
 ------------------------------------------------------------------------------
-*ast_search.BufSpec*
+*ast-search.BufSpec*
 
     A list of buffer IDs or buffer names (strings or integers).
 
 ------------------------------------------------------------------------------
-*ast_search.Position*
+*ast-search.Position*
 
     {
         line: integer   "0-based line number"
@@ -161,7 +161,7 @@ TYPES AND STRUCTURES                                             *ast-search-typ
     }
 
 ------------------------------------------------------------------------------
-*ast_search.ByteOffset*
+*ast-search.ByteOffset*
 
     {
         start: integer  "inclusive start byte"
@@ -169,42 +169,42 @@ TYPES AND STRUCTURES                                             *ast-search-typ
     }
 
 ------------------------------------------------------------------------------
-*ast_search.Range*
+*ast-search.Range*
 
     {
-        byteOffset: ast_search.ByteOffset
-        start: ast_search.Position
-        end: ast_search.Position
+        byteOffset: |ast-search.ByteOffset|
+        start: |ast-search.Position|
+        end: |ast-search.Position|
     }
 
 ------------------------------------------------------------------------------
-*ast_search.MetaVar*
+*ast-search.MetaVar*
 
     {
         text: string
-        range: ast_search.Range
+        range: |ast-search.Range|
     }
 
 ------------------------------------------------------------------------------
-*ast_search.MetaVariables*
+*ast-search.MetaVariables*
 
     {
-        single: table<string, ast_search.MetaVar>
-        multi: table<string, ast_search.MetaVar[]>
-        transformed: table<string, string>
+        single: {[string]: |ast-search.MetaVar|}
+        multi: {[string]: |ast_search.MetaVar|[]}
+        transformed: {[string]: string}
     }
 
 ------------------------------------------------------------------------------
-*ast_search.Match*
+*ast-search.Match*
 
     {
         text: string
-        range: ast_search.Range
+        range: |ast-search.Range|
         file: string               "relative path of file"
         lines: string              "surrounding match lines"
         replacement?: string       "replacement text if any"
-        replacementOffsets?: ast_search.ByteOffset
-        metaVariables?: ast_search.MetaVariables
+        replacementOffsets?: |ast-search.ByteOffset|
+        metaVariables?: |ast-search.MetaVariables|
     }
 
 ==============================================================================
