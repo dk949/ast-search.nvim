@@ -57,3 +57,8 @@ escape `\`.
 - [ ] Documentation
 - [X] Tab completion for kinds used in the selector
 - [ ] Support for more rule functionality (e.g. regex)
+- [ ] Allow for a keymapping similar to `/` or `?` (maybe `@/` and `@?` by
+  default, since that's unlikely to be very useful by itself). Then make
+  a buffer local mapping for `n`/`N` which goes through the results
+    - `'hlsearch'` integration would be a bonus (even if I don't use it myself)
+    - `'incsearch'` would be really nice, but I suspect might be too slow?
