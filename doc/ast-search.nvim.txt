@@ -1,0 +1,220 @@
+*ast-search*
+
+Plugin for performing AST-based code searches using ast-grep
+
+==============================================================================
+INTRODUCTION                                                      *ast-search.nvim*
+
+This plugin provides an interface to [ast-grep](https://ast-grep.github.io/)
+from within Neovim. It enables syntax-aware code searching and |quickfix|
+integration using the `:Sg` command and Lua APIs.
+
+==============================================================================
+TABLE OF CONTENTS                                                *ast-search-table*
+
+1. |ast-search-usage|            - Using the :Sg command
+2. |ast-search-api|              - Lua API Reference
+3. |ast-search-types|            - Data structures
+
+==============================================================================
+USAGE                                                           *ast-search-usage*
+
+:Sg[!] {pattern} [@ {selector}]                                   *:Sg*
+
+Performs a syntax-aware search using `ast-grep`.
+
+- Without '!', searches the current buffer.
+- With '!', searches all files in the current directory.
+- The quickfix list is populated with captures of the pattern.
+- Use capturing (`$[A-Z]+`) for results to appear in the quickfix list.
+- Use non-capturing (`$_[A-Z]+`) for matches not added to the list.
+
+If no captures are specified, the whole match is used.
+
+The {selector} (after `@`) filters matches to a specific Treesitter node kind
+appropriate to the filetype. This is NOT part of ast-grep’s pattern syntax.
+
+Special character handling:
+- To match `@`, use `\@`
+- To match `\@`, use `\\\@`
+
+Related:
+  - Ast-grep pattern syntax: https://ast-grep.github.io/guide/pattern-syntax.html
+
+Examples:
+
+    :Sg $A = $_B
+
+Places all destinations of assignments in the |quickfix| list.
+
+    :Sg $A @ initializer_list
+
+Matches C++ initializer lists (e.g., `{1, 2, 3}`).
+
+    :Sg hello @ field_initializer_list identifier
+
+Matches identifiers named `hello` inside any `field_initializer_list`.
+
+NOTE:                                             *ast-search-query* *ast-search-selector* 
+This last example requires ast-grep 0.39+ with support for
+ESQuery-style kind syntax.
+
+See: https://ast-grep.github.io/guide/rule-config/atomic-rule.html#esquery-style-kind
+
+
+
+==============================================================================
+API USAGE                                                      *ast-search-api*
+
+CAUTION: The Lua API is not yet stable and may change. *ast-search-api-unstable*
+
+------------------------------------------------------------------------------
+
+ast_search.utils.run({pattern}, {selector}, {buf}, {cb}, {go_to_first})
+
+                                                       *ast_search.utils.run()*
+
+Runs `ast-grep run` asynchronously.
+
+Parameters:
+  - {pattern} (string): The search pattern (`--pattern`)
+  - {selector} (string|nil): Optional selector (`--selector`)
+  - {buf} (BufSpec|nil): Buffer(s) to search; `nil` = current buffer
+  - {cb} (function|nil): Callback function after matches found
+  - {go_to_first} (boolean|nil): Jump to first match if true (default: true)
+
+Returns:
+  - A |vim.system()| result (`vim.SystemObj`).
+
+Behavior:
+
+This function acts like the `run` subcommand of `ast-grep`. It runs
+asynchronously, returning a `vim.SystemObj` handle to the started process. 
+
+It takes a {pattern} and optionally a {selector} which will be passed as
+`--pattern` and `--selector` arguments to {ast-grep run} respectively.
+
+It takes an optional |ast_search.BufSpec| to determine which buffer to run on.
+{nil} indicates current buffer.
+
+The {cb} callback (if supplied) will be executed after the command has
+completed, but before the quickfix list is populated. Returning {false} or {nil}
+will result in quickfix list not being populated or opened. The callback takes
+a list of |ast_search.Match|.
+
+If the search succeeds and {cb} returns true (or is `nil`) the function will
+call |:cfirst|. Pass `false` as the last argument to prevent this.
+
+If the search fails, a warning will be printed.
+
+Raises an error if `ast-grep` exits with a non-zero exit code.
+
+------------------------------------------------------------------------------
+
+ast_search.utils.scan({rule}, {buf}, {lang}, {cb}, {go_to_first})
+
+                                                       *ast_search.utils.scan()*
+
+Runs `ast-grep scan` asynchronously.
+
+Parameters:
+  - {rule} (string or table): Rule to scan with. If table, must follow ast-grep rule format.
+  - {buf} (BufSpec|nil): Buffer(s) to scan; `nil` = current buffer
+  - {lang} (string|nil): Language for the scan (in rule's `language`)
+  - {cb} (function|nil): Callback after matches
+  - {go_to_first} (boolean|nil): Jump to first match (default: true)
+
+Returns:
+  - A |vim.system()| result (`vim.SystemObj`).
+
+Behavior:
+
+This function acts like the `scan` subcommand of `ast-grep`. It runs
+asynchronously, returning a `vim.SystemObj` handle to the started process. 
+
+The {rule} argument corresponds to the {rule} key in the inline rule (i.e. you
+don't need to specify {id} or language or include the key {rule} itself).
+
+It takes an optional {ast_search.BufSpec} to determine which buffer to run on.
+{nil} indicates current buffer.
+
+The optional {lang} argument will be passed as the {language} key in the rule.
+If it is omitted, the language of the current buffer is used.
+
+{cb} and {go_to_first} work the same as in |ast_search.utils.run|.
+
+
+==============================================================================
+TYPES AND STRUCTURES                                             *ast-search-types*
+
+------------------------------------------------------------------------------
+*ast_search.BufSpec*
+
+    A list of buffer IDs or buffer names (strings or integers).
+
+------------------------------------------------------------------------------
+*ast_search.Position*
+
+    {
+        line: integer   "0-based line number"
+        column: integer "0-based column number"
+    }
+
+------------------------------------------------------------------------------
+*ast_search.ByteOffset*
+
+    {
+        start: integer  "inclusive start byte"
+        end: integer    "exclusive end byte"
+    }
+
+------------------------------------------------------------------------------
+*ast_search.Range*
+
+    {
+        byteOffset: ast_search.ByteOffset
+        start: ast_search.Position
+        end: ast_search.Position
+    }
+
+------------------------------------------------------------------------------
+*ast_search.MetaVar*
+
+    {
+        text: string
+        range: ast_search.Range
+    }
+
+------------------------------------------------------------------------------
+*ast_search.MetaVariables*
+
+    {
+        single: table<string, ast_search.MetaVar>
+        multi: table<string, ast_search.MetaVar[]>
+        transformed: table<string, string>
+    }
+
+------------------------------------------------------------------------------
+*ast_search.Match*
+
+    {
+        text: string
+        range: ast_search.Range
+        file: string               "relative path of file"
+        lines: string              "surrounding match lines"
+        replacement?: string       "replacement text if any"
+        replacementOffsets?: ast_search.ByteOffset
+        metaVariables?: ast_search.MetaVariables
+    }
+
+==============================================================================
+ISSUES, BUGS, SUGGESTIONS, CONTRIBUTIONS                       *ast-search-bugs*
+
+Please submit any issues or bugs here:
+https://github.com/dk949/ast-search.nvim/issues
+
+Pull requests are also welcome:
+https://github.com/dk949/ast-search.nvim/pulls
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
