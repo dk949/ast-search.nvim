@@ -89,7 +89,7 @@ function run(pattern, selector, buf, cb, go_to_first) end
 ```
 
 This function acts like the `run` subcommand of `ast-grep`. It runs
-asynchronously, returning a `vim.SystemObj` handle to the started process. 
+asynchronously, returning a `vim.SystemObj` handle to the started process.
 
 It takes a `pattern` and optionally a `selector` which will be passed as
 `--pattern` and `--selector` arguments to `ast-grep run` respectively.
@@ -122,7 +122,7 @@ function scan(rule, buf, lang, cb, go_to_first) end
 ```
 
 This function acts like the `scan` subcommand of `ast-grep`. It runs
-asynchronously, returning a `vim.SystemObj` handle to the started process. 
+asynchronously, returning a `vim.SystemObj` handle to the started process.
 
 The `rule` argument corresponds to the `rule` key in the inline rule (i.e. you
 don't need to specify `id` or language or include the key `rule` itself).
@@ -195,7 +195,7 @@ A list of buffer IDs or names.
 
 ## TODO
 
-- [ ] Documentation
+- [X] Documentation
 - [X] Tab completion for kinds used in the selector
 - [ ] Support for more rule functionality (e.g. regex)
 - [ ] Allow for a keymapping similar to `/` or `?` (maybe `@/` and `@?` by
