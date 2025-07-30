@@ -21,36 +21,177 @@ Using Lazy.nvim:
 
 ## Usage
 
-**Search for a simple pattern**
-
 ```vim
-:Sg $SOME_PATTERN
+:Sg[!] {pattern} [@ {selector}]
 ```
 
-**Search for a pattern with a kind**
+The `Sg` command searches the current file for `{pattern}` and populates
+quickfix list. When `!` is used searches all files in the current directory.
+Only captured matches (`\$[A-Z]+`) will be placed in the quickfix list, to avoid
+a match being added to qflist, use a non capturing match (`\$_[A-Z]+`). If no
+captures are specified, the whole match is placed in the quickfix list. See
+[ast-grep documentation](https://ast-grep.github.io/guide/pattern-syntax.html).
+
+When `@ {selector}` is used, matches the pattern to the selector. A selector is
+a treesitter node kind for the current language (use tab completion to see
+available kinds). NOTE: This is not part of the `ast-grep` pattern syntax. If
+you need to match the `@` character in the pattern, use `\@`. To match the
+sequence `\@` in the pattern use `\\\@` (first escape the backslash, then escape
+the `@`). This should be pretty rare, a backslash not preceding an `@` doesn't
+need to be escaped, but can be.
+
+
+Examples:
+
+```vim
+:Sg $A = $_B
+```
+
+This will place all destinations of assignment (but not sources) in the quickfix
+list.
+
+```vim
+:Sg $A @ initializer_list
+```
+
+This will match all C++ initialiser lists (`{1, 2, 3}`). Note that using
+`{ $A }` will match compound statements with a single statement, not initialiser
+lists. A single selector matches the same kind that the pattern represents.
+
+```vim
+hello @ field_initializer_list identifier
+```
+
+This will match all instances of identifier `hello` being used in anywhere in
+`field_initializer_list` (and no other instances).
+
 
 > [!NOTE]
-> This works bets with the [ESQuery style
+> The last example only works with [ESQuery style
 > kind](https://ast-grep.github.io/guide/rule-config/atomic-rule.html#esquery-style-kind)
 > syntax added in `ast-grep` 0.39.
 
+## API usage
 
-```vim
-:Sg $SOME_PATTERN @ some_selector
+> [!CAUTION]
+> API is currently not very stable an subject to change!
+
+### `ast_search.utils.run`
+
+```lua
+---@param pattern string
+---@param selector string?
+---@param buf ast_search.BufSpec?
+---@param cb (fun(matches:ast_search.Match[]):boolean)?
+---@param go_to_first boolean?
+---@return vim.SystemObj
+function run(pattern, selector, buf, cb, go_to_first) end
 ```
 
-**Going through found items**
+This function acts like the `run` subcommand of `ast-grep`. It runs
+asynchronously, returning a `vim.SystemObj` handle to the started process. 
 
-If `ast-grep` finds matches, they will be placed in a quickfix list (you can
-navigate it with `]q` and `[q`). This is similar to how `:vimgrep` works. Each
-capture will have it's own entry in the list.
+It takes a `pattern` and optionally a `selector` which will be passed as
+`--pattern` and `--selector` arguments to `ast-grep run` respectively.
 
-**Using the `@` character in a pattern**
+It takes an optional `ast_search.BufSpec` to determine which buffer to run on.
+`nil` indicates current buffer.
 
-Since the `@` character is used to separate the pattern from the selector, it
-has to be escaped to appear in a pattern: Use `\@` to escape `@` and `\\` to
-escape `\`.
+The `cb` callback (if supplied) will be executed after the command has
+completed, but before the quickfix list is populated. Returning `false` or `nil`
+will result in quickfix list not being populated or opened. The callback takes
+a list of `ast_search.Match`.
 
+If the search succeeds and `cb` returns true (or is `nil`) the function will
+call `:cfirst`. Pass `false` as the last argument to prevent this.
+
+If the search fails, a warning will be printed.
+
+Raises an error if `ast-grep` exits with a non-zero exit code.
+
+### `ast_search.utils.scan`
+
+```lua
+---@param rule string|table<string,any>
+---@param buf ast_search.BufSpec?
+---@param lang string?
+---@param cb (fun(matches:ast_search.Match[]):boolean)?
+---@param go_to_first boolean?
+---@return vim.SystemObj
+function scan(rule, buf, lang, cb, go_to_first) end
+```
+
+This function acts like the `scan` subcommand of `ast-grep`. It runs
+asynchronously, returning a `vim.SystemObj` handle to the started process. 
+
+The `rule` argument corresponds to the `rule` key in the inline rule (i.e. you
+don't need to specify `id` or language or include the key `rule` itself).
+
+It takes an optional `ast_search.BufSpec` to determine which buffer to run on.
+`nil` indicates current buffer.
+
+The optional `lang` argument will be passed as the `language` key in the rule.
+If it is omitted, the language of the current buffer is used.
+
+`cb` and `go_to_first` work the same as in `ast_search.utils.run`.
+
+
+### `ast_search.BufSpec`
+
+A list of buffer IDs or names.
+
+### `ast_search.Position`
+
+```
+{
+    line: integer # zero-based line number
+    column: integer # zero-based column number
+}
+```
+
+### `ast_search.ByteOffset`
+
+```
+    start: integer # start is inclusive
+    end: integer   # end is exclusive
+```
+
+### `ast_search.Range`
+
+```
+    byteOffset: ast_search.ByteOffset
+    start: ast_search.Position
+    end: ast_search.Position
+```
+
+### `ast_search.MetaVar`
+
+```
+    text: string
+    range: ast_search.Range
+```
+
+### `ast_search.MetaVariables`
+
+```
+    single: table<string, ast_search.MetaVar>
+    multi: table<string, ast_search.MetaVar[]>
+    transformed: table<string, string>
+```
+
+### `ast_search.Match`
+
+```
+{
+    text: string
+    range: ast_search.Range
+    file: string # relative path to the file
+    lines: string # surrounding lines of the match
+    replacement: string? # optional replacement if present
+    replacementOffsets: ast_search.ByteOffset?
+    metaVariables: ast_search.MetaVariables?
+}
+```
 
 ## TODO
 
