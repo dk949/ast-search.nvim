@@ -198,6 +198,7 @@ A list of buffer IDs or names.
 - [X] Documentation
 - [X] Tab completion for kinds used in the selector
 - [ ] Support for more rule functionality (e.g. regex)
+- [ ] Support selector of the form `kind > *` which would map to `inside: kind`
 - [ ] Allow for a keymapping similar to `/` or `?` (maybe `@/` and `@?` by
   default, since that's unlikely to be very useful by itself). Then make
   a buffer local mapping for `n`/`N` which goes through the results
