@@ -177,7 +177,7 @@ end
 ---@param go_to_first boolean?
 ---@return vim.SystemObj
 function M.run(pattern, selector, buf, cb, go_to_first)
-    local args = { "--pattern", pattern }
+    local args = { "--pattern", "--", pattern }
     if selector then args = vim.list_extend(args, { "--selector", selector }) end
 
     return runAstGrep("run", buf, args, cb, go_to_first)
