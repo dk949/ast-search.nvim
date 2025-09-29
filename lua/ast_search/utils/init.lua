@@ -177,7 +177,8 @@ end
 ---@param go_to_first boolean?
 ---@return vim.SystemObj
 function M.run(pattern, selector, buf, cb, go_to_first)
-    local args = { "--pattern", "--", pattern }
+    if vim.startswith(pattern, '-') then pattern = ' ' .. pattern end
+    local args = { "--pattern", pattern }
     if selector then args = vim.list_extend(args, { "--selector", selector }) end
 
     return runAstGrep("run", buf, args, cb, go_to_first)
@@ -196,6 +197,5 @@ function M.scan(rule, buf, lang, cb, go_to_first)
     end
     return runAstGrep("scan", buf, { "--inline-rules", makeInlineRule(rule, lang) }, cb, go_to_first)
 end
-
 
 return M
